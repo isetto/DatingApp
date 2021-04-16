@@ -22,9 +22,6 @@ model: any = {}
       this.router.navigateByUrl("/members")
       this.toast.success('success')
       console.log(response)
-    }, error=> {
-      console.log(error)
-      this.toast.error(error.error)
     }
     )
   }
