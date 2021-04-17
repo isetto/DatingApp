@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Data;
 using API.DTOs;
@@ -17,10 +18,10 @@ namespace API.Controllers
     public class UsersController : BaseApiController
     {
         public IUserRepository UserRepository { get; set; }
-        public IMapper Mapper { get; set; }
+        public IMapper mapper { get; set; }
         public UsersController(IUserRepository userRepository, IMapper mapper)
         {
-            this.Mapper = mapper;
+            this.mapper = mapper;
             this.UserRepository = userRepository;
         }
 
@@ -35,6 +36,19 @@ namespace API.Controllers
         public async Task<ActionResult<MemberDto>> GetUser(string username)
         {
             return await UserRepository.GetMemberAsync(username);
+        }
+        [HttpPut()]
+        public async Task<ActionResult> UpdateUser(MemberUpdateDto memberUpdateDto)
+        {
+            var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var user = await UserRepository.GetUserByUsernameAsync(username);
+
+            mapper.Map(memberUpdateDto, user); //we map dto to AppUser 
+            UserRepository.Update(user);
+            if(await UserRepository.SaveAllAsync()) return NoContent();
+            return BadRequest("Failed to update user");
+
         }
     }
 }
