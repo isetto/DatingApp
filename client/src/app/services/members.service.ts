@@ -1,9 +1,10 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { Member } from '../models/Member';
+import { PaginatedResult } from '../models/pagination';
 
 
 
@@ -13,14 +14,23 @@ import { Member } from '../models/Member';
 export class MembersService {
   baseUrl = environment.apiUrl
   members: Member[] = []
+  paginatedResult: PaginatedResult<Member[]> = new PaginatedResult<Member[]>();
   constructor(private http: HttpClient) { }
 
-  getMembers(): Observable<Member[]>{
-    if(this.members.length > 0) return of(this.members)
-    return this.http.get<Member[]>(`${this.baseUrl}users`).pipe(
-      map((members: Member[])=>{
-        this.members = members
-        return members
+  getMembers(page?: number, itemsPerPage?: number): Observable<PaginatedResult<Member[]>>{
+    let params = new HttpParams()
+    if(page !== null && itemsPerPage !== null){
+      params = params.append('pageNumber', page.toString())
+      params = params.append('pageSize', itemsPerPage.toString())
+    }
+    //{observe: 'response', params} causes that we will get full response from server which we need to get params header back
+    return this.http.get<Member[]>(`${this.baseUrl}users`, {observe: 'response', params}).pipe(
+      map(response=>{
+        this.paginatedResult.result = response.body
+        if(response.headers.get('Pagination') !== null){
+          this.paginatedResult.pagination = JSON.parse(response.headers.get('Pagination'))
+        }
+        return this.paginatedResult;
       })
     )
   }
