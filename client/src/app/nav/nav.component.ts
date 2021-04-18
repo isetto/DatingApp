@@ -21,7 +21,6 @@ model: any = {}
     this.accountService.login(this.model).subscribe(response=>{
       this.router.navigateByUrl("/members")
       this.toast.success('success')
-      console.log(response)
     }
     )
   }
