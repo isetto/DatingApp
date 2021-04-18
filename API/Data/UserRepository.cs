@@ -12,6 +12,7 @@ using System.Linq;
 using AutoMapper.QueryableExtensions;
 using AutoMapper;
 using API.Helpers;
+using System;
 
 namespace API.Data
 {
@@ -35,10 +36,18 @@ namespace API.Data
 
         public async Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams)
         {
-               var query = context.Users
-                .ProjectTo<MemberDto>(mapper.ConfigurationProvider)
-                .AsNoTracking();    //we dont need to track because we wont modify these objects only download them
-                return await PagedList<MemberDto>.CreateAsync(query, userParams.PageNumber, userParams.PageSize);
+               var query = context.Users.AsQueryable();
+
+                query = query.Where(user => user.UserName != userParams.CurrentUsername);   //show users that are not me
+                query = query.Where(user => user.Gender == userParams.Gender); 
+
+                var minDob = DateTime.Today.AddYears(-userParams.MaxAge - 1);
+                var maxDob = DateTime.Today.AddYears(-userParams.MinAge);
+                query = query.Where(user => user.DateOfBirth >= minDob && user.DateOfBirth <= maxDob); 
+
+                return await PagedList<MemberDto>.CreateAsync(
+                    query.ProjectTo<MemberDto>(mapper.ConfigurationProvider).AsNoTracking(), //we dont need to track because we wont modify these objects only download them
+                    userParams.PageNumber, userParams.PageSize);
         }
 
         public async Task<AppUser> GetUserByIdAsync()
