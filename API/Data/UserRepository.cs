@@ -44,15 +44,20 @@ namespace API.Data
                 var minDob = DateTime.Today.AddYears(-userParams.MaxAge - 1);
                 var maxDob = DateTime.Today.AddYears(-userParams.MinAge);
                 query = query.Where(user => user.DateOfBirth >= minDob && user.DateOfBirth <= maxDob); 
+                query = userParams.OrderBy switch
+                {
+                    "created" => query.OrderByDescending(user => user.Created), //this is for string "created"
+                    _ => query.OrderByDescending(user => user.LastActive)       //_ means default option
+                };
 
                 return await PagedList<MemberDto>.CreateAsync(
                     query.ProjectTo<MemberDto>(mapper.ConfigurationProvider).AsNoTracking(), //we dont need to track because we wont modify these objects only download them
                     userParams.PageNumber, userParams.PageSize);
         }
 
-        public async Task<AppUser> GetUserByIdAsync()
+        public async Task<AppUser> GetUserByIdAsync(int userId)
         {
-            return await context.Users.FindAsync();
+            return await context.Users.FindAsync(userId);
         }
         public async Task<AppUser> GetUserByUsernameAsync(string username)
         {
