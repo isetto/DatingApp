@@ -15,10 +15,16 @@ import { UserParams } from '../models/userParams';
 export class MembersService {
   baseUrl = environment.apiUrl
   members: Member[] = []
+  memberCache = new Map()
 
   constructor(private http: HttpClient) { }
 
   getMembers(userParams: UserParams): Observable<PaginatedResult<Member[]>>{
+    var cachedResponse = this.memberCache.get(Object.values(userParams).join('-')) //get cached response
+    if(cachedResponse){ //if exists then return it, dont make http call
+      return of(cachedResponse)
+    }
+
     let params = this.getPaginationHeaders(userParams.pageNumber, userParams.pageSize)
     params = params.append('minAge', userParams.minAge.toString())
     params = params.append('maxAge', userParams.maxAge.toString())
@@ -26,7 +32,12 @@ export class MembersService {
     params = params.append('orderBy', userParams.orderBy)
     const url = `${this.baseUrl}users`
 
-    return this.getPaginatedResult<Member[]>(url, params )
+    return this.getPaginatedResult<Member[]>(url, params ).pipe(
+      map(response=>{
+        this.memberCache.set(Object.values(userParams).join('-'), response) //set cached response
+        return response
+      })
+    )
   }
 
   private getPaginationHeaders(pageNumber: number, pageSize: number){
