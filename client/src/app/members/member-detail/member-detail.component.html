@@ -11,13 +11,15 @@
                     <strong>Age:</strong>
                     <p>{{member.age}}</p>
                 </div>
-                <div>
-                    <strong>Member Since:</strong>
-                    <p>{{member.created}}</p>
-                </div>
+               
                 <div>
                     <strong>Last Active:</strong>
-                    <p>{{member.lastActive}}</p>
+                    <p>{{member.lastActive | timeago}}</p>
+                </div>
+
+                <div>
+                    <strong>Member Since:</strong>
+                    <p>{{member.created | date: 'dd.MM.yyyy'}}</p>
                 </div>
              
             </div>
