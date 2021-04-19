@@ -22,5 +22,7 @@ namespace API.Entities
         public string City { get; set; }
         public string Country { get; set; }
         public ICollection<Photo> Photos { get; set; } //adding this line and in Photo.cs this line: [Table("Photos")] it added automatically in migration new table photo with AppUserId as a foreignKey
+        public ICollection<UserLike> LikedByUsers { get; set; }
+        public ICollection<UserLike> LikedUsers { get; set; }
     }
 }
