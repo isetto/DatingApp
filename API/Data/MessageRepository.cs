@@ -34,7 +34,10 @@ namespace API.Data
 
         public async Task<Message> GetMessage(int messageId)
         {
-            return await context.Messages.FindAsync(messageId);
+            return await context.Messages
+            .Include(u => u.Sender)
+            .Include(u => u.Recipient)
+            .SingleOrDefaultAsync(message => message.Id == messageId);
         }
 
         public async Task<PagedList<MessageDto>> GetMessagesForUser(MessageParams messageParams)
@@ -44,9 +47,12 @@ namespace API.Data
                 .AsQueryable();
             query = messageParams.Container switch
             {
-                "Inbox" => query.Where(message => message.Recipient.UserName == messageParams.Username),  //mesages i received
-                "Outbox" => query.Where(message => message.Sender.UserName == messageParams.Username),     //messages i sent
-                _ => query.Where(message => message.Recipient.UserName == messageParams.Username && message.DateRead == null)
+                "Inbox" => query.Where(message => message.Recipient.UserName == messageParams.Username &&
+                message.RecipientDeleted == false),  //mesages i received
+                "Outbox" => query.Where(message => message.Sender.UserName == messageParams.Username &&
+                message.SenderDeleted == false),     //messages i sent
+                _ => query.Where(message => message.Recipient.UserName == messageParams.Username
+                 && message.RecipientDeleted == false && message.DateRead == null)
             };
             var messages = query.ProjectTo<MessageDto>(mapper.ConfigurationProvider);
             return await PagedList<MessageDto>.CreateAsync(messages, messageParams.PageNumber, messageParams.PageSize);
@@ -58,10 +64,10 @@ namespace API.Data
             var messages = await context.Messages                   
                 .Include(u => u.Sender).ThenInclude(photo => photo.Photos)
                 .Include(u => u.Recipient).ThenInclude(photo => photo.Photos)
-                .Where(m => m.Recipient.UserName == currentUsername     //get conversations of the users
+                .Where(m => m.Recipient.UserName == currentUsername && m.RecipientDeleted == false     //get conversations of the users
                 && m.Sender.UserName == reciepentUsername           
                 || m.Recipient.UserName == reciepentUsername           
-                && m.Sender.UserName == currentUsername             
+                && m.Sender.UserName == currentUsername && m.SenderDeleted == false             
                 )
                 .OrderBy(m => m.MessageSent)
                 .ToListAsync();

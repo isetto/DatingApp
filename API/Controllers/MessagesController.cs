@@ -59,5 +59,18 @@ namespace API.Controllers
             var currentUsername = User.GetUsername();
             return Ok(await messageRepository.GetMessageThread(currentUsername, username));
         }
+
+        [HttpDelete("{messageId}")]
+        public async Task<ActionResult> DeleteMessage(int messageId){
+            var username = User.GetUsername();
+            var message = await messageRepository.GetMessage(messageId);
+            if(message.Sender.UserName != username && message.Recipient.UserName != username) return Unauthorized();
+            if(message.Sender.UserName == username) message.SenderDeleted = true;
+            if(message.Recipient.UserName == username) message.RecipientDeleted = true;
+            if(message.SenderDeleted && message.RecipientDeleted) messageRepository.DeleteMessage(message);
+            if(await messageRepository.SaveAllAsync()) return Ok();
+            return BadRequest("Problem deleting the message");
+
+        }
     }
 }
