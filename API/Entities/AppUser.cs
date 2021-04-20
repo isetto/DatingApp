@@ -24,5 +24,7 @@ namespace API.Entities
         public ICollection<Photo> Photos { get; set; } //adding this line and in Photo.cs this line: [Table("Photos")] it added automatically in migration new table photo with AppUserId as a foreignKey
         public ICollection<UserLike> LikedByUsers { get; set; }
         public ICollection<UserLike> LikedUsers { get; set; }
+        public ICollection<Message> MessagesSent { get; set; }
+        public ICollection<Message> MessagesReceived { get; set; }
     }
 }

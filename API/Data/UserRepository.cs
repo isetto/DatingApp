@@ -44,7 +44,7 @@ namespace API.Data
                 var minDob = DateTime.Today.AddYears(-userParams.MaxAge - 1);
                 var maxDob = DateTime.Today.AddYears(-userParams.MinAge);
                 query = query.Where(user => user.DateOfBirth >= minDob && user.DateOfBirth <= maxDob); 
-                query = userParams.OrderBy switch
+                query = userParams.OrderBy switch                               //modern switch statement
                 {
                     "created" => query.OrderByDescending(user => user.Created), //this is for string "created"
                     _ => query.OrderByDescending(user => user.LastActive)       //_ means default option
