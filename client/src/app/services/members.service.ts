@@ -8,6 +8,7 @@ import { PaginatedResult } from '../models/pagination';
 import { User } from '../models/User';
 import { UserParams } from '../models/userParams';
 import { AccountService } from './account.service';
+import { getPaginatedResult, getPaginationHeaders } from './paginationHelper';
 
 
 
@@ -47,14 +48,14 @@ export class MembersService {
       return of(cachedResponse)
     }
 
-    let params = this.getPaginationHeaders(userParams.pageNumber, userParams.pageSize)
+    let params = getPaginationHeaders(userParams.pageNumber, userParams.pageSize)
     params = params.append('minAge', userParams.minAge.toString())
     params = params.append('maxAge', userParams.maxAge.toString())
     params = params.append('gender', userParams.gender)
     params = params.append('orderBy', userParams.orderBy)
     const url = `${this.baseUrl}users`
 
-    return this.getPaginatedResult<Member[]>(url, params ).pipe(
+    return getPaginatedResult<Member[]>(url, params, this.http).pipe(
       map(response=>{
         this.memberCache.set(Object.values(userParams).join('-'), response) //set cached response
         return response
@@ -62,13 +63,7 @@ export class MembersService {
     )
   }
 
-  private getPaginationHeaders(pageNumber: number, pageSize: number){
-    let params = new HttpParams()
-    params = params.append('pageNumber', pageNumber.toString())
-    params = params.append('pageSize', pageSize.toString())
 
-    return params
-  }
 
   getMember(username: string): Observable<Member>{
     const member = [...this.memberCache.values()]
@@ -100,22 +95,10 @@ export class MembersService {
   }
 
   getLikes(predicate: string, pageNumber: number, pageSize: number){
-    let params = this.getPaginationHeaders(pageNumber, pageSize)
+    let params = getPaginationHeaders(pageNumber, pageSize)
     params = params.append('predicate', predicate)
-    return this.getPaginatedResult<Partial<Member[]>>(`${this.baseUrl}likes`, params)
+    return getPaginatedResult<Partial<Member[]>>(`${this.baseUrl}likes`, params, this.http)
   }
 
-  private getPaginatedResult<T>( url: string, params: any ): Observable<PaginatedResult<T>> {
-    const paginatedResult: PaginatedResult<T> = new PaginatedResult<T>();
-    //{observe: 'response', params} causes that we will get full response from server which we need to get params header back
-    return this.http.get<T>( url, { observe: 'response', params } ).pipe(
-      map( (response: any) => {
-        paginatedResult.result = response.body;
-        if ( response.headers.get( 'Pagination' ) !== null ) {
-          paginatedResult.pagination = JSON.parse( response.headers.get( 'Pagination' ) );
-        }
-        return paginatedResult;
-      } )
-    );
-  }
+
 }
