@@ -1,19 +1,36 @@
 using API.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Data
 {
-    public class DataContext : DbContext
+    public class DataContext : //we needed to specify all that types coz default is string, and we needed to override them by int
+    IdentityDbContext<AppUser, AppRole, int, IdentityUserClaim<int>, 
+    AppUserRole, IdentityUserLogin<int>, IdentityRoleClaim<int>,  IdentityUserToken<int>>
     {
         public DataContext(DbContextOptions options) : base(options)
         {
         }
 
-        public DbSet<AppUser> Users { get; set; }
+        // public DbSet<AppUser> Users { get; set; }    with IdentityDbContext dont need to create table Users like that, it will be handled by Identity
         public DbSet<UserLike> Likes { get; set; }
         public DbSet<Message> Messages { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)   //for building relations in db when db creates
         {
+
+            builder.Entity<AppUser>()
+            .HasMany(ur => ur.UserRoles)
+            .WithOne(u => u.User)
+            .HasForeignKey(ur => ur.UserId)
+            .IsRequired();
+
+            builder.Entity<AppRole>()
+            .HasMany(ur => ur.UserRoles)
+            .WithOne(u => u.Role)
+            .HasForeignKey(ur => ur.RoleId)
+            .IsRequired();
+
             base.OnModelCreating(builder);
             builder.Entity<UserLike>()
             .HasKey(k => new {k.SourceUserId, k.LikedUserId});  //creates primary key for UserLike table
