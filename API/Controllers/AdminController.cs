@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -47,8 +48,9 @@ namespace API.Controllers
                 {
                     if(userRole.RoleId == role.Id) userRoleArray.Add(new TempUserRole
                     {
+
                         Id = userRole.UserId,
-                        Role = role.Name
+                        Roles = new string[]{ role.Name}
                     });
                 }
             }
@@ -57,9 +59,10 @@ namespace API.Controllers
             {
                   foreach (var user in users)
                 {
-                    if(userRoleArray[i].Id == user.Id) userRoleArray[i].Username = user.UserName;
+                    if(userRoleArray[i].Id == user.Id) userRoleArray[i].UserName = user.UserName;
                 }
             }
+            
 
            
             return Ok(userRoleArray);
