@@ -16,6 +16,8 @@ namespace API.Data
         // public DbSet<AppUser> Users { get; set; }    with IdentityDbContext dont need to create table Users like that, it will be handled by Identity
         public DbSet<UserLike> Likes { get; set; }
         public DbSet<Message> Messages { get; set; }
+        public DbSet<Group> Groups { get; set; }
+        public DbSet<Connection> Connections { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)   //for building relations in db when db creates
         {
 
