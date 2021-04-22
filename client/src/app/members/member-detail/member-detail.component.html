@@ -3,6 +3,9 @@
         <div class="card">
             <img class='card-img-top img-thumbnail' src="{{member.photoUrl || './assets/user.png'}}" alt="{{member.knownAs}}">
             <div class="card-body">
+                <div class="bt-2" *ngIf="(presence.onlineUsers$ | async).includes(member.username)">
+                    <i class='fa fa-user-circle text-success'></i> Online now
+                </div>
                 <div>
                     <strong>Location:</strong>
                     <p>{{member.city}}, {{member.country}}</p>
@@ -39,15 +42,15 @@
                 <h4>Looking for</h4>
                 <p>{{member.lookingFor}}</p>
             </tab>
-            <tab heading='Interests {{member.interests}}' (selectTab)='onTabActivated($event)'>
-                <h4>Description</h4>
-                <p>{{member.introduction}}</p>
+            <tab heading='Interests' (selectTab)='onTabActivated($event)'>
+                <h4>Interests</h4>
+                <p>{{member.interests}}</p>
             </tab>
             <tab heading='Photos' (selectTab)='onTabActivated($event)'>
                 <ngx-gallery [options]="galleryOptions" [images]="galleryImages" class="ngx-gallery"></ngx-gallery>
             </tab>
             <tab heading='Messages' (selectTab)='onTabActivated($event)'>
-                <app-member-messages [messages]='messages' [username]='member.username'></app-member-messages>
+                <app-member-messages [username]='member.username'></app-member-messages>
             </tab>
         </tabset>
     </div>
